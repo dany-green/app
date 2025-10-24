@@ -37,20 +37,26 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
+      console.log('Attempting login for:', email);
       const response = await authAPI.login(email, password);
+      console.log('Login response:', response);
       const { access_token } = response;
       
       localStorage.setItem('token', access_token);
       setToken(access_token);
       
+      console.log('Fetching user data...');
       const userData = await authAPI.getCurrentUser();
+      console.log('User data:', userData);
       setUser(userData);
       
       return { success: true };
     } catch (error) {
+      console.error('Login error:', error);
+      console.error('Error response:', error.response?.data);
       return {
         success: false,
-        error: error.response?.data?.detail || 'Login failed',
+        error: error.response?.data?.detail || error.message || 'Login failed',
       };
     }
   };
