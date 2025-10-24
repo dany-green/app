@@ -7,6 +7,7 @@ import Layout from "@/components/Layout";
 import LoginPage from "@/pages/LoginPage";
 import ProjectsPage from "@/pages/ProjectsPage";
 import InventoryPage from "@/pages/InventoryPage";
+import EquipmentPage from "@/pages/EquipmentPage";
 import UsersPage from "@/pages/UsersPage";
 import { Loader2 } from "lucide-react";
 
@@ -63,6 +64,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <InventoryPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/equipment"
+        element={
+          <ProtectedRoute>
+            <EquipmentPage />
           </ProtectedRoute>
         }
       />
