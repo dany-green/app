@@ -37,13 +37,15 @@ export default function LoginPage() {
       <Card className="w-full max-w-md shadow-2xl" data-testid="login-card">
         <CardHeader className="space-y-4">
           <div className="flex justify-center">
-            <div className="bg-primary/10 p-3 rounded-full">
-              <Building2 className="h-12 w-12 text-primary" />
+            <div className="w-16 h-16 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+              <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
             </div>
           </div>
           <div className="text-center space-y-2">
-            <CardTitle className="text-3xl font-bold">SLS1</CardTitle>
-            <CardDescription className="text-base">
+            <CardTitle className="text-4xl font-bold text-gray-900">SLS+</CardTitle>
+            <CardDescription className="text-base text-gray-600">
               Организационная платформа студии
             </CardDescription>
           </div>
