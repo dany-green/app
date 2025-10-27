@@ -120,6 +120,20 @@ export default function LoginPage() {
             </Button>
           </form>
 
+          <div className="mt-4">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full border-blue-300 hover:bg-blue-50 hover:border-blue-400"
+              onClick={handleAdminLogin}
+              disabled={loading}
+              data-testid="admin-quick-login-button"
+            >
+              <Building2 className="mr-2 h-4 w-4" />
+              Быстрый вход как Админ
+            </Button>
+          </div>
+
           <div className="mt-6 p-4 bg-muted rounded-lg">
             <p className="text-sm font-semibold mb-2">Тестовые данные:</p>
             <p className="text-xs text-muted-foreground">
