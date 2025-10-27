@@ -139,6 +139,28 @@ export const inventoryAPI = {
     const response = await api.delete(`/inventory/${id}`);
     return response.data;
   },
+
+  // Image management
+  uploadImage: async (itemId, formData) => {
+    const response = await axios.post(
+      `${API_URL}/inventory/${itemId}/images`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      }
+    );
+    return response.data;
+  },
+
+  deleteImage: async (itemId, imageUrl) => {
+    const response = await api.delete(`/inventory/${itemId}/images`, {
+      params: { image_url: imageUrl },
+    });
+    return response.data;
+  },
 };
 
 // ============== LOGS API ==============
