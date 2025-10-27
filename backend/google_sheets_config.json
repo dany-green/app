@@ -1,0 +1,60 @@
+{
+  "_comment": "Конфигурация для интеграции с Google Sheets",
+  "_instructions": "См. файл GOOGLE_SHEETS_INTEGRATION.md для полной инструкции по настройке",
+  
+  "storage_mode": "local",
+  "_storage_mode_options": ["local", "google_sheets"],
+  "_storage_mode_description": "local - хранение на сервере, google_sheets - синхронизация с Google Sheets",
+  
+  "google_sheets": {
+    "enabled": false,
+    "spreadsheet_id": "",
+    "_spreadsheet_id_example": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms",
+    "_spreadsheet_id_instructions": "ID таблицы из URL: https://docs.google.com/spreadsheets/d/{SPREADSHEET_ID}/edit",
+    
+    "sheets": {
+      "inventory": {
+        "sheet_name": "Инвентарь",
+        "sheet_id": 0,
+        "_description": "Основная таблица с инвентарем"
+      },
+      "images": {
+        "sheet_name": "Фотографии",
+        "sheet_id": 1,
+        "_description": "Таблица с ссылками на фотографии (Google Drive или прямые URL)"
+      }
+    },
+    
+    "credentials": {
+      "type": "service_account",
+      "credentials_file": "credentials.json",
+      "_instructions": "Поместите файл credentials.json в папку /app/backend/",
+      "_how_to_get": "См. GOOGLE_SHEETS_INTEGRATION.md, раздел 'Получение credentials'"
+    },
+    
+    "sync": {
+      "auto_sync": false,
+      "sync_interval_minutes": 30,
+      "_description": "Автоматическая синхронизация между локальной БД и Google Sheets"
+    },
+    
+    "google_drive": {
+      "enabled": false,
+      "folder_id": "",
+      "_folder_id_description": "ID папки Google Drive для хранения фотографий",
+      "_folder_id_instructions": "Откройте папку в Drive, скопируйте ID из URL: https://drive.google.com/drive/folders/{FOLDER_ID}"
+    }
+  },
+  
+  "local_storage": {
+    "upload_dir": "/app/uploads",
+    "max_file_size_mb": 10,
+    "allowed_extensions": ["jpg", "jpeg", "png", "webp", "gif"],
+    "image_optimization": {
+      "enabled": true,
+      "max_width": 1920,
+      "max_height": 1920,
+      "quality": 85
+    }
+  }
+}
