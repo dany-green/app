@@ -109,6 +109,7 @@ class InventoryItem(BaseModel):
     total_quantity: int
     visual_marker: Optional[str] = None
     description: Optional[str] = None
+    images: List[str] = Field(default_factory=list)  # URLs or paths to images
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
@@ -127,6 +128,7 @@ class InventoryItemUpdate(BaseModel):
     total_quantity: Optional[int] = None
     visual_marker: Optional[str] = None
     description: Optional[str] = None
+    images: Optional[List[str]] = None
 
 
 # Log Models
