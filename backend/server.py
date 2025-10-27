@@ -1,4 +1,6 @@
-from fastapi import FastAPI, APIRouter, Depends, HTTPException, status
+from fastapi import FastAPI, APIRouter, Depends, HTTPException, status, UploadFile, File
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -18,6 +20,7 @@ from auth import (
     get_password_hash, verify_password, create_access_token,
     get_current_user, get_current_admin_user, get_current_curator_or_admin
 )
+from storage_service import storage_service
 
 
 ROOT_DIR = Path(__file__).parent
