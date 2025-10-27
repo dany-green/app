@@ -470,6 +470,156 @@ async def initialize_database():
     }
 
 
+# ============== IMAGE UPLOAD ROUTES ==============
+
+@api_router.post("/inventory/{item_id}/images")
+async def upload_inventory_image(
+    item_id: str,
+    file: UploadFile = File(...),
+    current_user: TokenData = Depends(get_current_curator_or_admin)
+):
+    """Upload an image for an inventory item"""
+    # Check if item exists
+    item = await db.inventory.find_one({"id": item_id}, {"_id": 0})
+    if not item:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Inventory item not found"
+        )
+    
+    # Validate file type
+    allowed_extensions = storage_service.config['local_storage']['allowed_extensions']
+    file_ext = file.filename.split('.')[-1].lower()
+    if file_ext not in allowed_extensions:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"File type not allowed. Allowed: {', '.join(allowed_extensions)}"
+        )
+    
+    # Validate file size
+    max_size_mb = storage_service.config['local_storage']['max_file_size_mb']
+    file_content = await file.read()
+    file_size_mb = len(file_content) / (1024 * 1024)
+    
+    if file_size_mb > max_size_mb:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"File too large. Max size: {max_size_mb}MB"
+        )
+    
+    # Save image
+    try:
+        image_url = await storage_service.save_image(file_content, file.filename, item_id)
+        
+        # Update item's images array
+        current_images = item.get('images', [])
+        current_images.append(image_url)
+        
+        await db.inventory.update_one(
+            {"id": item_id},
+            {
+                "$set": {
+                    "images": current_images,
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }
+            }
+        )
+        
+        # Log the action
+        log = LogEntry(
+            user_id=current_user.user_id,
+            user_name=current_user.email,
+            action="UPLOAD_IMAGE",
+            entity_type="INVENTORY",
+            entity_id=item_id,
+            details={"filename": file.filename, "image_url": image_url}
+        )
+        await db.logs.insert_one(serialize_for_db(log.model_dump()))
+        
+        return {
+            "message": "Image uploaded successfully",
+            "image_url": image_url,
+            "total_images": len(current_images)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error uploading image: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to upload image"
+        )
+
+
+@api_router.delete("/inventory/{item_id}/images")
+async def delete_inventory_image(
+    item_id: str,
+    image_url: str,
+    current_user: TokenData = Depends(get_current_curator_or_admin)
+):
+    """Delete an image from an inventory item"""
+    # Check if item exists
+    item = await db.inventory.find_one({"id": item_id}, {"_id": 0})
+    if not item:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Inventory item not found"
+        )
+    
+    # Remove image from array
+    current_images = item.get('images', [])
+    if image_url not in current_images:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Image not found in item"
+        )
+    
+    current_images.remove(image_url)
+    
+    # Update database
+    await db.inventory.update_one(
+        {"id": item_id},
+        {
+            "$set": {
+                "images": current_images,
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }
+        }
+    )
+    
+    # Delete physical file
+    await storage_service.delete_image(image_url)
+    
+    # Log the action
+    log = LogEntry(
+        user_id=current_user.user_id,
+        user_name=current_user.email,
+        action="DELETE_IMAGE",
+        entity_type="INVENTORY",
+        entity_id=item_id,
+        details={"image_url": image_url}
+    )
+    await db.logs.insert_one(serialize_for_db(log.model_dump()))
+    
+    return {
+        "message": "Image deleted successfully",
+        "remaining_images": len(current_images)
+    }
+
+
+@api_router.get("/uploads/{item_id}/{filename}")
+async def get_image(item_id: str, filename: str):
+    """Serve uploaded images"""
+    file_path = Path(storage_service.upload_dir) / item_id / filename
+    
+    if not file_path.exists():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Image not found"
+        )
+    
+    return FileResponse(file_path)
+
+
 # ============== GENERAL ROUTES ==============
 
 @api_router.get("/")
