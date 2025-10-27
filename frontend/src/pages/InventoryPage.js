@@ -99,6 +99,11 @@ export default function InventoryPage() {
     setDialogOpen(true);
   };
 
+  const handleViewDetails = (item) => {
+    setViewingItem(item);
+    setDetailsDialogOpen(true);
+  };
+
   const resetForm = () => {
     setFormData({
       category: '',
