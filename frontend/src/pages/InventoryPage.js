@@ -228,33 +228,65 @@ export default function InventoryPage() {
               <h2 className="text-xl font-semibold mb-3">{category}</h2>
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {grouped[category].map((item) => (
-                  <Card key={item.id} data-testid={`inventory-item-${item.id}`}>
+                  <Card key={item.id} data-testid={`inventory-item-${item.id}`} className="overflow-hidden">
+                    {/* Image Preview */}
+                    {item.images && item.images.length > 0 && (
+                      <div 
+                        className="relative h-48 bg-gray-100 cursor-pointer hover:opacity-90 transition-opacity"
+                        onClick={() => handleViewDetails(item)}
+                      >
+                        <img
+                          src={`${process.env.REACT_APP_BACKEND_URL}${item.images[0]}`}
+                          alt={item.name}
+                          className="w-full h-full object-cover"
+                        />
+                        {item.images.length > 1 && (
+                          <div className="absolute bottom-2 right-2 bg-black bg-opacity-70 text-white px-2 py-1 rounded text-xs flex items-center gap-1">
+                            <ImageIcon className="h-3 w-3" />
+                            +{item.images.length - 1}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    
                     <CardHeader>
                       <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-1">
                           {item.visual_marker && <span className="text-2xl">{item.visual_marker}</span>}
-                          <div>
+                          <div className="flex-1">
                             <CardTitle className="text-lg">{item.name}</CardTitle>
-                            {item.description && <CardDescription className="mt-1">{item.description}</CardDescription>}
+                            {item.description && <CardDescription className="mt-1 line-clamp-2">{item.description}</CardDescription>}
                           </div>
                         </div>
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <div className="flex items-center justify-between">
+                      <div className="space-y-3">
                         <Badge variant="secondary" className="text-base">
                           Кол-во: {item.total_quantity}
                         </Badge>
-                        {canManageInventory() && (
-                          <div className="flex gap-2">
-                            <Button size="sm" variant="outline" onClick={() => handleEdit(item)} data-testid={`edit-inventory-${item.id}`}>
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button size="sm" variant="outline" onClick={() => handleDelete(item.id)} data-testid={`delete-inventory-${item.id}`}>
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                          </div>
-                        )}
+                        
+                        <div className="flex gap-2">
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="flex-1"
+                            onClick={() => handleViewDetails(item)}
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
+                            Детали
+                          </Button>
+                          {canManageInventory() && (
+                            <>
+                              <Button size="sm" variant="outline" onClick={() => handleEdit(item)} data-testid={`edit-inventory-${item.id}`}>
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button size="sm" variant="outline" onClick={() => handleDelete(item.id)} data-testid={`delete-inventory-${item.id}`}>
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
