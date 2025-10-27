@@ -296,6 +296,90 @@ export default function InventoryPage() {
           ))}
         </div>
       )}
+
+      {/* Details Dialog with Images */}
+      <Dialog open={detailsDialogOpen} onOpenChange={setDetailsDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl flex items-center gap-2">
+              {viewingItem?.visual_marker && <span className="text-3xl">{viewingItem.visual_marker}</span>}
+              {viewingItem?.name}
+            </DialogTitle>
+            <DialogDescription>
+              {viewingItem?.category} • Количество: {viewingItem?.total_quantity}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {viewingItem && (
+            <Tabs defaultValue="info" className="mt-4">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="info">Информация</TabsTrigger>
+                <TabsTrigger value="photos">
+                  Фотографии
+                  {viewingItem.images && viewingItem.images.length > 0 && (
+                    <Badge variant="secondary" className="ml-2">{viewingItem.images.length}</Badge>
+                  )}
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="info" className="space-y-4 mt-4">
+                <div>
+                  <Label className="text-sm font-semibold">Название</Label>
+                  <p className="mt-1 text-base">{viewingItem.name}</p>
+                </div>
+                
+                <div>
+                  <Label className="text-sm font-semibold">Категория</Label>
+                  <p className="mt-1 text-base">{viewingItem.category}</p>
+                </div>
+                
+                <div>
+                  <Label className="text-sm font-semibold">Количество</Label>
+                  <p className="mt-1 text-base">{viewingItem.total_quantity} ед.</p>
+                </div>
+                
+                {viewingItem.visual_marker && (
+                  <div>
+                    <Label className="text-sm font-semibold">Визуальная метка</Label>
+                    <p className="mt-1 text-3xl">{viewingItem.visual_marker}</p>
+                  </div>
+                )}
+                
+                {viewingItem.description && (
+                  <div>
+                    <Label className="text-sm font-semibold">Описание</Label>
+                    <p className="mt-1 text-base">{viewingItem.description}</p>
+                  </div>
+                )}
+              </TabsContent>
+              
+              <TabsContent value="photos" className="mt-4">
+                <ImageGallery
+                  itemId={viewingItem.id}
+                  images={viewingItem.images || []}
+                  onImagesChange={loadInventory}
+                  canEdit={canManageInventory()}
+                />
+              </TabsContent>
+            </Tabs>
+          )}
+          
+          <DialogFooter className="mt-4">
+            {canManageInventory() && (
+              <Button onClick={() => {
+                setDetailsDialogOpen(false);
+                setTimeout(() => handleEdit(viewingItem), 100);
+              }}>
+                <Pencil className="h-4 w-4 mr-2" />
+                Редактировать
+              </Button>
+            )}
+            <Button variant="outline" onClick={() => setDetailsDialogOpen(false)}>
+              Закрыть
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
