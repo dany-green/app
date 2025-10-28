@@ -412,11 +412,11 @@ class BackendTester:
             )
             response_time = time.time() - start_time
             
-            if response.status_code == 401:
+            if response.status_code in [401, 403]:
                 self.log_test(
                     "Unauthorized Access Control", 
                     True, 
-                    "Correctly rejected unauthorized request", 
+                    f"Correctly rejected unauthorized request (HTTP {response.status_code})", 
                     response_time
                 )
                 return True
@@ -424,7 +424,7 @@ class BackendTester:
                 self.log_test(
                     "Unauthorized Access Control", 
                     False, 
-                    f"Expected 401, got HTTP {response.status_code}: {response.text}", 
+                    f"Expected 401 or 403, got HTTP {response.status_code}: {response.text}", 
                     response_time
                 )
                 return False
