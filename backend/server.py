@@ -417,6 +417,258 @@ async def delete_inventory_item(
     return {"message": "Inventory item deleted successfully"}
 
 
+# ============== EQUIPMENT ROUTES ==============
+
+@api_router.get("/equipment", response_model=List[EquipmentItem])
+async def get_equipment(current_user: TokenData = Depends(get_current_user)):
+    """Get all equipment items"""
+    equipment = await db.equipment.find({}, {"_id": 0}).to_list(1000)
+    return [EquipmentItem(**deserialize_from_db(item)) for item in equipment]
+
+
+@api_router.get("/equipment/{item_id}", response_model=EquipmentItem)
+async def get_equipment_item(
+    item_id: str,
+    current_user: TokenData = Depends(get_current_user)
+):
+    """Get a single equipment item"""
+    item = await db.equipment.find_one({"id": item_id}, {"_id": 0})
+    
+    if not item:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Equipment item not found"
+        )
+    
+    return EquipmentItem(**deserialize_from_db(item))
+
+
+@api_router.post("/equipment", response_model=EquipmentItem, status_code=status.HTTP_201_CREATED)
+async def create_equipment_item(
+    item_data: EquipmentItemCreate,
+    current_user: TokenData = Depends(get_current_curator_or_admin)
+):
+    """Create a new equipment item (Curator or Admin)"""
+    item = EquipmentItem(**item_data.model_dump())
+    
+    doc = serialize_for_db(item.model_dump())
+    await db.equipment.insert_one(doc)
+    
+    # Log the action
+    log = LogEntry(
+        user_id=current_user.user_id,
+        user_name=current_user.email,
+        action="CREATE",
+        entity_type="EQUIPMENT",
+        entity_id=item.id,
+        details={"name": item.name, "category": item.category}
+    )
+    await db.logs.insert_one(serialize_for_db(log.model_dump()))
+    
+    return item
+
+
+@api_router.patch("/equipment/{item_id}", response_model=EquipmentItem)
+async def update_equipment_item(
+    item_id: str,
+    item_data: EquipmentItemUpdate,
+    current_user: TokenData = Depends(get_current_curator_or_admin)
+):
+    """Update equipment item (Curator or Admin)"""
+    item = await db.equipment.find_one({"id": item_id}, {"_id": 0})
+    
+    if not item:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Equipment item not found"
+        )
+    
+    # Update only provided fields
+    update_data = item_data.model_dump(exclude_unset=True)
+    if update_data:
+        update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+        await db.equipment.update_one(
+            {"id": item_id},
+            {"$set": update_data}
+        )
+    
+    # Log the action
+    log = LogEntry(
+        user_id=current_user.user_id,
+        user_name=current_user.email,
+        action="UPDATE",
+        entity_type="EQUIPMENT",
+        entity_id=item_id,
+        details=update_data
+    )
+    await db.logs.insert_one(serialize_for_db(log.model_dump()))
+    
+    updated_item = await db.equipment.find_one({"id": item_id}, {"_id": 0})
+    return EquipmentItem(**deserialize_from_db(updated_item))
+
+
+@api_router.delete("/equipment/{item_id}")
+async def delete_equipment_item(
+    item_id: str,
+    current_user: TokenData = Depends(get_current_admin_user)
+):
+    """Delete equipment item (Admin only)"""
+    result = await db.equipment.delete_one({"id": item_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Equipment item not found"
+        )
+    
+    # Log the action
+    log = LogEntry(
+        user_id=current_user.user_id,
+        user_name=current_user.email,
+        action="DELETE",
+        entity_type="EQUIPMENT",
+        entity_id=item_id
+    )
+    await db.logs.insert_one(serialize_for_db(log.model_dump()))
+    
+    return {"message": "Equipment item deleted successfully"}
+
+
+# Equipment Image Management
+@api_router.post("/equipment/{item_id}/images")
+async def upload_equipment_image(
+    item_id: str,
+    file: UploadFile = File(...),
+    current_user: TokenData = Depends(get_current_curator_or_admin)
+):
+    """Upload an image for an equipment item"""
+    # Check if item exists
+    item = await db.equipment.find_one({"id": item_id}, {"_id": 0})
+    if not item:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Equipment item not found"
+        )
+    
+    # Validate file type
+    allowed_extensions = storage_service.config['local_storage']['allowed_extensions']
+    file_ext = file.filename.split('.')[-1].lower()
+    if file_ext not in allowed_extensions:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"File type not allowed. Allowed: {', '.join(allowed_extensions)}"
+        )
+    
+    # Validate file size
+    max_size_mb = storage_service.config['local_storage']['max_file_size_mb']
+    file_content = await file.read()
+    file_size_mb = len(file_content) / (1024 * 1024)
+    
+    if file_size_mb > max_size_mb:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"File too large. Max size: {max_size_mb}MB"
+        )
+    
+    # Save image
+    try:
+        image_url = await storage_service.save_image(file_content, file.filename, item_id)
+        
+        # Update item's images array
+        current_images = item.get('images', [])
+        current_images.append(image_url)
+        
+        await db.equipment.update_one(
+            {"id": item_id},
+            {
+                "$set": {
+                    "images": current_images,
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }
+            }
+        )
+        
+        # Log the action
+        log = LogEntry(
+            user_id=current_user.user_id,
+            user_name=current_user.email,
+            action="UPLOAD_IMAGE",
+            entity_type="EQUIPMENT",
+            entity_id=item_id,
+            details={"filename": file.filename, "image_url": image_url}
+        )
+        await db.logs.insert_one(serialize_for_db(log.model_dump()))
+        
+        return {
+            "message": "Image uploaded successfully",
+            "image_url": image_url,
+            "total_images": len(current_images)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error uploading image: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to upload image"
+        )
+
+
+@api_router.delete("/equipment/{item_id}/images")
+async def delete_equipment_image(
+    item_id: str,
+    image_url: str,
+    current_user: TokenData = Depends(get_current_curator_or_admin)
+):
+    """Delete an image from an equipment item"""
+    # Check if item exists
+    item = await db.equipment.find_one({"id": item_id}, {"_id": 0})
+    if not item:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Equipment item not found"
+        )
+    
+    # Remove image from array
+    current_images = item.get('images', [])
+    if image_url not in current_images:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Image not found in item"
+        )
+    
+    current_images.remove(image_url)
+    
+    # Update database
+    await db.equipment.update_one(
+        {"id": item_id},
+        {
+            "$set": {
+                "images": current_images,
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }
+        }
+    )
+    
+    # Delete physical file
+    await storage_service.delete_image(image_url)
+    
+    # Log the action
+    log = LogEntry(
+        user_id=current_user.user_id,
+        user_name=current_user.email,
+        action="DELETE_IMAGE",
+        entity_type="EQUIPMENT",
+        entity_id=item_id,
+        details={"image_url": image_url}
+    )
+    await db.logs.insert_one(serialize_for_db(log.model_dump()))
+    
+    return {
+        "message": "Image deleted successfully",
+        "remaining_images": len(current_images)
+    }
+
+
 # ============== LOGS ROUTES ==============
 
 @api_router.get("/logs", response_model=List[LogEntry])
