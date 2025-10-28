@@ -359,6 +359,7 @@ export default function InventoryPage() {
                   images={viewingItem.images || []}
                   onImagesChange={loadInventory}
                   canEdit={canManageInventory()}
+                  apiService={inventoryAPI}
                 />
               </TabsContent>
             </Tabs>
