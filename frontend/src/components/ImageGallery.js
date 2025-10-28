@@ -3,9 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { inventoryAPI } from '@/lib/api';
 
-export default function ImageGallery({ itemId, images = [], onImagesChange, canEdit = false }) {
+export default function ImageGallery({ itemId, images = [], onImagesChange, canEdit = false, apiService }) {
   const [uploading, setUploading] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
   const fileInputRef = useRef(null);
@@ -43,7 +42,7 @@ export default function ImageGallery({ itemId, images = [], onImagesChange, canE
         const formData = new FormData();
         formData.append('file', file);
 
-        const response = await inventoryAPI.uploadImage(itemId, formData);
+        const response = await apiService.uploadImage(itemId, formData);
         
         toast({
           title: 'Успешно',
@@ -73,7 +72,7 @@ export default function ImageGallery({ itemId, images = [], onImagesChange, canE
     if (!window.confirm('Удалить это изображение?')) return;
 
     try {
-      await inventoryAPI.deleteImage(itemId, imageUrl);
+      await apiService.deleteImage(itemId, imageUrl);
       toast({
         title: 'Успешно',
         description: 'Изображение удалено',
