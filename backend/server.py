@@ -14,6 +14,7 @@ from models import (
     User, UserCreate, UserLogin, UserResponse, Token,
     Project, ProjectCreate, ProjectUpdate, ProjectStatus,
     InventoryItem, InventoryItemCreate, InventoryItemUpdate,
+    EquipmentItem, EquipmentItemCreate, EquipmentItemUpdate,
     LogEntry, LogEntryCreate, UserRole, TokenData
 )
 from auth import (
