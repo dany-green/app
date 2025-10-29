@@ -221,4 +221,9 @@ export const logsAPI = {
     const response = await api.get(`/logs?limit=${limit}`);
     return response.data;
   },
+  
+  cleanup: async () => {
+    const response = await api.delete('/logs/cleanup');
+    return response.data;
+  },
 };
