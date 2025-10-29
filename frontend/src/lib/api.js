@@ -207,7 +207,7 @@ export const equipmentAPI = {
   },
 
   deleteImage: async (itemId, imageUrl) => {
-    const response => await api.delete(`/equipment/${itemId}/images`, {
+    const response = await api.delete(`/equipment/${itemId}/images`, {
       params: { image_url: imageUrl },
     });
     return response.data;
