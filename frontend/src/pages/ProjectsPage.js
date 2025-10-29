@@ -167,7 +167,7 @@ export default function ProjectsPage() {
             <FolderKanban className="h-16 w-16 text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">Нет проектов</h3>
             <p className="text-sm text-muted-foreground mb-4">Начните с создания вашего первого проекта</p>
-            <Button onClick={() => navigate('/projects/new')}>
+            <Button onClick={() => setDialogOpen(true)}>
               <Plus className="mr-2 h-4 w-4" />
               Создать проект
             </Button>
