@@ -46,6 +46,35 @@ export default function ProjectsPage() {
     }
   };
 
+  const handleSave = async () => {
+    try {
+      // Преобразовать дату в ISO формат
+      const projectData = {
+        ...formData,
+        project_date: new Date(formData.project_date).toISOString(),
+      };
+      await projectsAPI.create(projectData);
+      toast({ title: 'Проект создан' });
+      setDialogOpen(false);
+      resetForm();
+      loadProjects();
+    } catch (error) {
+      toast({
+        title: 'Ошибка',
+        description: error.response?.data?.detail || 'Ошибка создания проекта',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      title: '',
+      lead_decorator: '',
+      project_date: '',
+    });
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'Создан':
