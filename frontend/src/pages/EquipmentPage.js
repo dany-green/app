@@ -415,6 +415,7 @@ export default function EquipmentPage() {
                   images={viewingItem.images || []}
                   onImagesChange={loadEquipment}
                   canEdit={canManageInventory()}
+                  apiService={equipmentAPI}
                 />
               </TabsContent>
             </Tabs>
