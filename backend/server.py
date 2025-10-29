@@ -677,8 +677,26 @@ async def get_logs(
     current_user: TokenData = Depends(get_current_admin_user)
 ):
     """Get activity logs (Admin only)"""
+    # Автоматически удалить логи старше 30 дней
+    one_month_ago = datetime.now(timezone.utc) - timedelta(days=30)
+    await db.logs.delete_many({"timestamp": {"$lt": one_month_ago.isoformat()}})
+    
     logs = await db.logs.find({}, {"_id": 0}).sort("timestamp", -1).to_list(limit)
     return [LogEntry(**deserialize_from_db(log)) for log in logs]
+
+
+@api_router.delete("/logs/cleanup")
+async def cleanup_old_logs(
+    current_user: TokenData = Depends(get_current_admin_user)
+):
+    """Manually delete logs older than 30 days (Admin only)"""
+    one_month_ago = datetime.now(timezone.utc) - timedelta(days=30)
+    result = await db.logs.delete_many({"timestamp": {"$lt": one_month_ago.isoformat()}})
+    
+    return {
+        "message": "Old logs deleted successfully",
+        "deleted_count": result.deleted_count
+    }
 
 
 # ============== INIT ROUTE ==============
