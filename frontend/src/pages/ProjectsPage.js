@@ -111,10 +111,54 @@ export default function ProjectsPage() {
           <h1 className="text-3xl font-bold tracking-tight" data-testid="projects-page-title">Проекты</h1>
           <p className="text-muted-foreground">Управление проектами и мероприятиями</p>
         </div>
-        <Button onClick={() => navigate('/projects/new')} data-testid="create-project-button">
-          <Plus className="mr-2 h-4 w-4" />
-          Создать проект
-        </Button>
+        <Dialog open={dialogOpen} onOpenChange={(open) => {
+          setDialogOpen(open);
+          if (!open) resetForm();
+        }}>
+          <DialogTrigger asChild>
+            <Button data-testid="create-project-button">
+              <Plus className="mr-2 h-4 w-4" />
+              Создать проект
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Создать новый проект</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="title">Название проекта</Label>
+                <Input
+                  id="title"
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  placeholder="Свадьба Иванов"
+                />
+              </div>
+              <div>
+                <Label htmlFor="lead_decorator">Ведущий декоратор</Label>
+                <Input
+                  id="lead_decorator"
+                  value={formData.lead_decorator}
+                  onChange={(e) => setFormData({ ...formData, lead_decorator: e.target.value })}
+                  placeholder="Иван Иванов"
+                />
+              </div>
+              <div>
+                <Label htmlFor="project_date">Дата мероприятия</Label>
+                <Input
+                  id="project_date"
+                  type="datetime-local"
+                  value={formData.project_date}
+                  onChange={(e) => setFormData({ ...formData, project_date: e.target.value })}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button onClick={handleSave}>Создать</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {projects.length === 0 ? (
