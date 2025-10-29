@@ -32,7 +32,6 @@ export default function Layout({ children }) {
 
   if (isAdmin()) {
     navigation.push(
-      { name: 'Админ-панель', href: '/users', icon: Users },
       { name: 'Настройки', href: '/settings', icon: SettingsIcon }
     );
   }
