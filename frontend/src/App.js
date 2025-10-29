@@ -8,7 +8,7 @@ import LoginPage from "@/pages/LoginPage";
 import ProjectsPage from "@/pages/ProjectsPage";
 import InventoryPage from "@/pages/InventoryPage";
 import EquipmentPage from "@/pages/EquipmentPage";
-import UsersPage from "@/pages/UsersPage";
+import SettingsPage from "@/pages/SettingsPage";
 import { Loader2 } from "lucide-react";
 
 // Protected Route component
