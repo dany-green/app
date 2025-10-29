@@ -9,13 +9,23 @@ import { Plus, Loader2, Calendar, User, FolderKanban } from 'lucide-react';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
+
+  const [formData, setFormData] = useState({
+    title: '',
+    lead_decorator: '',
+    project_date: '',
+  });
 
   useEffect(() => {
     loadProjects();
