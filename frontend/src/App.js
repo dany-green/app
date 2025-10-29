@@ -76,10 +76,10 @@ function AppRoutes() {
         }
       />
       <Route
-        path="/users"
+        path="/settings"
         element={
           <ProtectedRoute adminOnly>
-            <UsersPage />
+            <SettingsPage />
           </ProtectedRoute>
         }
       />
