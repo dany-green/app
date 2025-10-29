@@ -207,58 +207,7 @@ export const equipmentAPI = {
   },
 
   deleteImage: async (itemId, imageUrl) => {
-    const response = await api.delete(`/equipment/${itemId}/images`, {
-      params: { image_url: imageUrl },
-    });
-    return response.data;
-  },
-};
-
-// ============== EQUIPMENT API ==============
-
-export const equipmentAPI = {
-  getAll: async () => {
-    const response = await api.get('/equipment');
-    return response.data;
-  },
-
-  getById: async (id) => {
-    const response = await api.get(`/equipment/${id}`);
-    return response.data;
-  },
-
-  create: async (itemData) => {
-    const response = await api.post('/equipment', itemData);
-    return response.data;
-  },
-
-  update: async (id, itemData) => {
-    const response = await api.patch(`/equipment/${id}`, itemData);
-    return response.data;
-  },
-
-  delete: async (id) => {
-    const response = await api.delete(`/equipment/${id}`);
-    return response.data;
-  },
-
-  // Image management
-  uploadImage: async (itemId, formData) => {
-    const response = await axios.post(
-      `${API_URL}/equipment/${itemId}/images`,
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-      }
-    );
-    return response.data;
-  },
-
-  deleteImage: async (itemId, imageUrl) => {
-    const response = await api.delete(`/equipment/${itemId}/images`, {
+    const response => await api.delete(`/equipment/${itemId}/images`, {
       params: { image_url: imageUrl },
     });
     return response.data;
