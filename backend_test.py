@@ -1032,6 +1032,6 @@ class ProjectListsTester:
         return passed == total
 
 if __name__ == "__main__":
-    tester = BackendTester()
+    tester = ProjectListsTester()
     success = tester.run_all_tests()
     exit(0 if success else 1)
