@@ -61,6 +61,14 @@ function AppRoutes() {
         }
       />
       <Route
+        path="/projects/:id"
+        element={
+          <ProtectedRoute>
+            <ProjectDetailPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/inventory"
         element={
           <ProtectedRoute>
