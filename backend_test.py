@@ -31,26 +31,30 @@ class ProjectListsTester:
         self.inventory_items = []
         self.equipment_items = []
         
-    def log_test(self, test_name, success, message, response_time=None):
-        """Log test result"""
+    def log_test(self, test_name, success, message, response_time=None, request_data=None, response_data=None):
+        """Log test result with detailed information"""
         result = {
             "test": test_name,
             "success": success,
             "message": message,
-            "response_time": response_time
+            "response_time": response_time,
+            "request_data": request_data,
+            "response_data": response_data
         }
         self.test_results.append(result)
         status = "✅ PASS" if success else "❌ FAIL"
         time_info = f" ({response_time:.3f}s)" if response_time else ""
         print(f"{status}: {test_name} - {message}{time_info}")
         
-    def create_test_image(self):
-        """Create a test image (100x100 red square)"""
-        img = Image.new('RGB', (100, 100), color='red')
-        img_bytes = BytesIO()
-        img.save(img_bytes, format='PNG')
-        img_bytes.seek(0)
-        return img_bytes.getvalue()
+    def create_sample_list_item(self, item_id, name, category, quantity, source):
+        """Create a sample list item with proper structure"""
+        return {
+            "id": item_id,
+            "name": name,
+            "category": category,
+            "quantity": quantity,
+            "source": source
+        }
         
     def test_database_initialization(self):
         """Test 1: Database initialization"""
