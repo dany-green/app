@@ -64,6 +64,8 @@ class StorageService:
         """
         if self.mode == 'local':
             return await self._save_local(file_content, filename, item_id)
+        elif self.mode == 'telegram':
+            return await self._save_telegram(file_content, filename, item_id)
         elif self.mode == 'google_sheets':
             return await self._save_google_drive(file_content, filename, item_id)
         else:
