@@ -62,6 +62,11 @@ export const authAPI = {
     const response = await api.post('/init');
     return response.data;
   },
+
+  loadTestData: async () => {
+    const response = await api.post('/load-test-data');
+    return response.data;
+  },
 };
 
 // ============== USERS API ==============
