@@ -34,6 +34,21 @@ class StorageService:
         self.mode = STORAGE_MODE
         self.upload_dir = UPLOAD_DIR
         self.config = CONFIG
+        self.telegram_storage = None
+        
+        # Инициализировать Telegram хранилище если включено
+        if self.mode == 'telegram':
+            telegram_config = CONFIG.get('telegram_storage', {})
+            bot_token = os.environ.get('TELEGRAM_BOT_TOKEN', telegram_config.get('bot_token', ''))
+            chat_id = os.environ.get('TELEGRAM_CHAT_ID', telegram_config.get('chat_id', ''))
+            
+            if bot_token and chat_id:
+                self.telegram_storage = TelegramStorage(bot_token, chat_id)
+            else:
+                raise ValueError(
+                    "Telegram storage enabled but credentials not provided. "
+                    "Set TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID environment variables."
+                )
         
     async def save_image(self, file_content: bytes, filename: str, item_id: str) -> str:
         """
