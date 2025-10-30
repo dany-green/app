@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Протестируй backend API для работы с фотографиями в инвентаре: SLS1 Organizational Platform - функционал загрузки и управления фотографиями для элементов инвентаря"
+user_problem_statement: "Провести глубокий анализ и комплексное тестирование backend API для работы с проектами и списками. Выявить проблемы с сохранением списков (preliminary_list, final_list, dismantling_list) в проектах."
 
 backend:
   - task: "Database Initialization API"
