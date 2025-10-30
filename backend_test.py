@@ -14,7 +14,7 @@ from pathlib import Path
 import uuid
 
 # Configuration
-BACKEND_URL = "https://project-audit-tool-2.preview.emergentagent.com/api"
+BACKEND_URL = "https://deploy-guide-28.preview.emergentagent.com/api"
 ADMIN_EMAIL = "admin@sls1.com"
 ADMIN_PASSWORD = "admin123"
 
