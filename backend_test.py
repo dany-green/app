@@ -465,37 +465,68 @@ class ProjectListsTester:
             self.log_test("ФАЗА 2.2: Verify Preliminary List", False, f"Exception: {str(e)}", response_time)
             return False
             
-    def test_image_deleted_from_inventory(self):
-        """Test 8: Verify image is removed from inventory item"""
+    def test_add_final_list(self):
+        """ФАЗА 2.3: Add items to final_list while preserving preliminary_list"""
         start_time = time.time()
         try:
             headers = {"Authorization": f"Bearer {self.token}"}
             
-            response = requests.get(f"{self.base_url}/inventory/{self.test_item_id}", headers=headers)
+            # Create final list with 2 different items
+            final_items = [
+                self.create_sample_list_item(
+                    self.inventory_items[1]["id"], 
+                    self.inventory_items[1]["name"], 
+                    self.inventory_items[1]["category"], 
+                    5, 
+                    "inventory"
+                ),
+                self.create_sample_list_item(
+                    self.equipment_items[1]["id"], 
+                    self.equipment_items[1]["name"], 
+                    self.equipment_items[1]["category"], 
+                    1, 
+                    "equipment"
+                )
+            ]
+            
+            update_data = {
+                "final_list": {
+                    "items": final_items
+                }
+            }
+            
+            response = requests.patch(f"{self.base_url}/projects/{self.project_a_id}", json=update_data, headers=headers)
             response_time = time.time() - start_time
             
             if response.status_code == 200:
                 data = response.json()
-                images = data.get("images", [])
-                if self.uploaded_image_url not in images:
+                final_list = data.get("final_list", {})
+                preliminary_list = data.get("preliminary_list", {})
+                
+                final_items_count = len(final_list.get("items", []))
+                preliminary_items_count = len(preliminary_list.get("items", []))
+                
+                if final_items_count == 2 and preliminary_items_count == 2:
                     self.log_test(
-                        "Image Deletion Verification", 
+                        "ФАЗА 2.3: Add Final List", 
                         True, 
-                        f"Image successfully removed from inventory item. Remaining: {len(images)} image(s)", 
-                        response_time
+                        f"Added final_list (2 items) while preserving preliminary_list (2 items)", 
+                        response_time,
+                        request_data=update_data,
+                        response_data={"final_list": final_list, "preliminary_preserved": preliminary_items_count == 2}
                     )
                     return True
                 else:
                     self.log_test(
-                        "Image Deletion Verification", 
+                        "ФАЗА 2.3: Add Final List", 
                         False, 
-                        f"Image still found in inventory item. Images: {images}", 
+                        f"Final: {final_items_count} items, Preliminary: {preliminary_items_count} items (expected 2 each)", 
                         response_time
                     )
                     return False
             else:
                 self.log_test(
-                    "Image Deletion Verification", 
+                    "ФАЗА 2.3: Add Final List", 
                     False, 
                     f"HTTP {response.status_code}: {response.text}", 
                     response_time
@@ -504,46 +535,79 @@ class ProjectListsTester:
                 
         except Exception as e:
             response_time = time.time() - start_time
-            self.log_test("Image Deletion Verification", False, f"Exception: {str(e)}", response_time)
+            self.log_test("ФАЗА 2.3: Add Final List", False, f"Exception: {str(e)}", response_time)
             return False
             
-    def test_unauthorized_access(self):
-        """Test 9: Test access control (unauthorized request)"""
+    def test_add_dismantling_list(self):
+        """ФАЗА 2.4: Add dismantling_list while preserving other lists"""
         start_time = time.time()
         try:
-            # Try to upload image without token
-            image_data = self.create_test_image()
-            files = {
-                'file': ('test_image.png', image_data, 'image/png')
+            headers = {"Authorization": f"Bearer {self.token}"}
+            
+            # Create dismantling list with 1 item
+            dismantling_items = [
+                self.create_sample_list_item(
+                    self.inventory_items[2]["id"], 
+                    self.inventory_items[2]["name"], 
+                    self.inventory_items[2]["category"], 
+                    1, 
+                    "inventory"
+                )
+            ]
+            
+            update_data = {
+                "dismantling_list": {
+                    "items": dismantling_items
+                }
             }
             
-            response = requests.post(
-                f"{self.base_url}/inventory/{self.test_item_id}/images", 
-                files=files
-                # No Authorization header
-            )
+            response = requests.patch(f"{self.base_url}/projects/{self.project_a_id}", json=update_data, headers=headers)
             response_time = time.time() - start_time
             
-            if response.status_code in [401, 403]:
-                self.log_test(
-                    "Unauthorized Access Control", 
-                    True, 
-                    f"Correctly rejected unauthorized request (HTTP {response.status_code})", 
-                    response_time
-                )
-                return True
+            if response.status_code == 200:
+                data = response.json()
+                dismantling_list = data.get("dismantling_list", {})
+                final_list = data.get("final_list", {})
+                preliminary_list = data.get("preliminary_list", {})
+                
+                dismantling_count = len(dismantling_list.get("items", []))
+                final_count = len(final_list.get("items", []))
+                preliminary_count = len(preliminary_list.get("items", []))
+                
+                if dismantling_count == 1 and final_count == 2 and preliminary_count == 2:
+                    self.log_test(
+                        "ФАЗА 2.4: Add Dismantling List", 
+                        True, 
+                        f"All three lists present: preliminary(2), final(2), dismantling(1)", 
+                        response_time,
+                        request_data=update_data,
+                        response_data={
+                            "dismantling_list": dismantling_list,
+                            "all_lists_preserved": True,
+                            "counts": {"preliminary": preliminary_count, "final": final_count, "dismantling": dismantling_count}
+                        }
+                    )
+                    return True
+                else:
+                    self.log_test(
+                        "ФАЗА 2.4: Add Dismantling List", 
+                        False, 
+                        f"Lists count - Preliminary: {preliminary_count}, Final: {final_count}, Dismantling: {dismantling_count}", 
+                        response_time
+                    )
+                    return False
             else:
                 self.log_test(
-                    "Unauthorized Access Control", 
+                    "ФАЗА 2.4: Add Dismantling List", 
                     False, 
-                    f"Expected 401 or 403, got HTTP {response.status_code}: {response.text}", 
+                    f"HTTP {response.status_code}: {response.text}", 
                     response_time
                 )
                 return False
                 
         except Exception as e:
             response_time = time.time() - start_time
-            self.log_test("Unauthorized Access Control", False, f"Exception: {str(e)}", response_time)
+            self.log_test("ФАЗА 2.4: Add Dismantling List", False, f"Exception: {str(e)}", response_time)
             return False
             
     def run_all_tests(self):
