@@ -741,6 +741,102 @@ async def initialize_database():
     }
 
 
+@api_router.post("/load-test-data")
+async def load_test_data():
+    """Load test data from testprevyou.json file"""
+    import json
+    
+    try:
+        # Read test data file
+        test_data_path = Path(__file__).parent.parent / 'testprevyou.json'
+        
+        if not test_data_path.exists():
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Test data file not found"
+            )
+        
+        with open(test_data_path, 'r', encoding='utf-8') as f:
+            test_data = json.load(f)
+        
+        # Clear existing data
+        await db.users.delete_many({})
+        await db.projects.delete_many({})
+        await db.inventory.delete_many({})
+        await db.equipment.delete_many({})
+        await db.logs.delete_many({})
+        
+        stats = {
+            "users": 0,
+            "projects": 0,
+            "inventory": 0,
+            "equipment": 0
+        }
+        
+        # Load users
+        for user_data in test_data.get('users', []):
+            password = user_data.pop('password', 'password123')
+            user = User(
+                **user_data,
+                password_hash=get_password_hash(password),
+                created_at=datetime.now(timezone.utc)
+            )
+            await db.users.insert_one(serialize_for_db(user.model_dump()))
+            stats["users"] += 1
+        
+        # Load projects
+        for project_data in test_data.get('projects', []):
+            # Parse project_date if it's a string
+            if isinstance(project_data.get('project_date'), str):
+                project_data['project_date'] = datetime.fromisoformat(project_data['project_date'].replace('Z', '+00:00'))
+            
+            project = Project(
+                **project_data,
+                created_at=datetime.now(timezone.utc),
+                updated_at=datetime.now(timezone.utc)
+            )
+            await db.projects.insert_one(serialize_for_db(project.model_dump()))
+            stats["projects"] += 1
+        
+        # Load inventory
+        for item_data in test_data.get('inventory', []):
+            item = InventoryItem(
+                **item_data,
+                created_at=datetime.now(timezone.utc),
+                updated_at=datetime.now(timezone.utc)
+            )
+            await db.inventory.insert_one(serialize_for_db(item.model_dump()))
+            stats["inventory"] += 1
+        
+        # Load equipment
+        for item_data in test_data.get('equipment', []):
+            item = EquipmentItem(
+                **item_data,
+                created_at=datetime.now(timezone.utc),
+                updated_at=datetime.now(timezone.utc)
+            )
+            await db.equipment.insert_one(serialize_for_db(item.model_dump()))
+            stats["equipment"] += 1
+        
+        return {
+            "message": "Test data loaded successfully",
+            "stats": stats,
+            "credentials": {
+                "admin": {"email": "admin@sls1.com", "password": "admin123"},
+                "decorator": {"email": "maria@sls1.com", "password": "maria123"},
+                "florist": {"email": "anna@sls1.com", "password": "anna123"},
+                "curator": {"email": "elena@sls1.com", "password": "elena123"}
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Error loading test data: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to load test data: {str(e)}"
+        )
+
+
 # ============== IMAGE UPLOAD ROUTES ==============
 
 @api_router.post("/inventory/{item_id}/images")
