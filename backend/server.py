@@ -1009,7 +1009,6 @@ async def get_telegram_image(file_id: str):
             )
         
         # Redirect to Telegram file URL
-        from fastapi.responses import RedirectResponse
         return RedirectResponse(url=file_url)
         
     except Exception as e:
