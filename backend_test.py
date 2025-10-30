@@ -137,53 +137,77 @@ class ProjectListsTester:
             self.log_test("ФАЗА 1.2: Authentication", False, f"Exception: {str(e)}", response_time)
             return False
             
-    def test_create_inventory_item(self):
-        """Test 3: Create test inventory item"""
+    def test_create_projects(self):
+        """ФАЗА 1.3: Create 3 test projects"""
         start_time = time.time()
         try:
             headers = {"Authorization": f"Bearer {self.token}"}
-            item_data = {
-                "category": "Тестовая категория",
-                "name": "Тестовый элемент для фото",
-                "total_quantity": 5,
-                "visual_marker": "📷",
-                "description": "Элемент для тестирования фотографий"
-            }
             
-            response = requests.post(f"{self.base_url}/inventory", json=item_data, headers=headers)
-            response_time = time.time() - start_time
+            projects_data = [
+                {
+                    "title": "Проект А - Тестирование списков",
+                    "lead_decorator": "Декоратор А",
+                    "project_date": "2024-01-15T10:00:00Z"
+                },
+                {
+                    "title": "Проект Б - Изоляция данных",
+                    "lead_decorator": "Декоратор Б", 
+                    "project_date": "2024-01-20T14:00:00Z"
+                },
+                {
+                    "title": "Проект В - Комплексное тестирование",
+                    "lead_decorator": "Декоратор В",
+                    "project_date": "2024-01-25T16:00:00Z"
+                }
+            ]
             
-            if response.status_code == 201:
-                data = response.json()
-                self.test_item_id = data.get("id")
-                if self.test_item_id:
-                    self.log_test(
-                        "Create Inventory Item", 
-                        True, 
-                        f"Created item with ID: {self.test_item_id}", 
-                        response_time
-                    )
-                    return True
+            created_projects = []
+            
+            for i, project_data in enumerate(projects_data):
+                response = requests.post(f"{self.base_url}/projects", json=project_data, headers=headers)
+                response_time = time.time() - start_time
+                
+                if response.status_code == 201:
+                    data = response.json()
+                    project_id = data.get("id")
+                    if project_id:
+                        created_projects.append(project_id)
+                        if i == 0:
+                            self.project_a_id = project_id
+                        elif i == 1:
+                            self.project_b_id = project_id
+                        elif i == 2:
+                            self.project_c_id = project_id
+                    else:
+                        self.log_test(
+                            "ФАЗА 1.3: Create Projects", 
+                            False, 
+                            f"No project ID in response for project {i+1}", 
+                            response_time
+                        )
+                        return False
                 else:
                     self.log_test(
-                        "Create Inventory Item", 
+                        "ФАЗА 1.3: Create Projects", 
                         False, 
-                        "No item ID in response", 
+                        f"HTTP {response.status_code} for project {i+1}: {response.text}", 
                         response_time
                     )
                     return False
-            else:
-                self.log_test(
-                    "Create Inventory Item", 
-                    False, 
-                    f"HTTP {response.status_code}: {response.text}", 
-                    response_time
-                )
-                return False
+            
+            self.log_test(
+                "ФАЗА 1.3: Create Projects", 
+                True, 
+                f"Created 3 projects: А({self.project_a_id[:8]}...), Б({self.project_b_id[:8]}...), В({self.project_c_id[:8]}...)", 
+                response_time,
+                request_data=projects_data,
+                response_data={"created_project_ids": created_projects}
+            )
+            return True
                 
         except Exception as e:
             response_time = time.time() - start_time
-            self.log_test("Create Inventory Item", False, f"Exception: {str(e)}", response_time)
+            self.log_test("ФАЗА 1.3: Create Projects", False, f"Exception: {str(e)}", response_time)
             return False
             
     def test_image_upload(self):
