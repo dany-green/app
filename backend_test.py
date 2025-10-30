@@ -13,7 +13,7 @@ import os
 from pathlib import Path
 
 # Configuration
-BACKEND_URL = "https://devlog-tracker.preview.emergentagent.com/api"
+BACKEND_URL = "https://project-audit-tool-2.preview.emergentagent.com/api"
 ADMIN_EMAIL = "admin@sls1.com"
 ADMIN_PASSWORD = "admin123"
 
