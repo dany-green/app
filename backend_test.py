@@ -272,46 +272,66 @@ class ProjectListsTester:
             self.log_test("ФАЗА 1.4: Create Inventory Items", False, f"Exception: {str(e)}", response_time)
             return False
             
-    def test_inventory_item_with_image(self):
-        """Test 5: Verify image appears in inventory item"""
+    def test_create_equipment_items(self):
+        """ФАЗА 1.5: Create 5 test equipment items"""
         start_time = time.time()
         try:
             headers = {"Authorization": f"Bearer {self.token}"}
             
-            response = requests.get(f"{self.base_url}/inventory/{self.test_item_id}", headers=headers)
-            response_time = time.time() - start_time
+            equipment_data = [
+                {"category": "Освещение", "name": "Прожектор LED 50W", "total_quantity": 10, "visual_marker": "💡"},
+                {"category": "Звук", "name": "Микрофон беспроводной", "total_quantity": 6, "visual_marker": "🎤"},
+                {"category": "Мебель", "name": "Стул банкетный", "total_quantity": 50, "visual_marker": "🪑"},
+                {"category": "Техника", "name": "Проектор мультимедийный", "total_quantity": 3, "visual_marker": "📽️"},
+                {"category": "Декор", "name": "Арка свадебная", "total_quantity": 2, "visual_marker": "🌸"}
+            ]
             
-            if response.status_code == 200:
-                data = response.json()
-                images = data.get("images", [])
-                if self.uploaded_image_url in images:
-                    self.log_test(
-                        "Inventory Item Image Check", 
-                        True, 
-                        f"Image found in inventory item: {len(images)} image(s)", 
-                        response_time
-                    )
-                    return True
+            for item_data in equipment_data:
+                response = requests.post(f"{self.base_url}/equipment", json=item_data, headers=headers)
+                
+                if response.status_code == 201:
+                    data = response.json()
+                    item_id = data.get("id")
+                    if item_id:
+                        self.equipment_items.append({
+                            "id": item_id,
+                            "name": item_data["name"],
+                            "category": item_data["category"],
+                            "quantity": item_data["total_quantity"]
+                        })
+                    else:
+                        response_time = time.time() - start_time
+                        self.log_test(
+                            "ФАЗА 1.5: Create Equipment Items", 
+                            False, 
+                            f"No item ID for {item_data['name']}", 
+                            response_time
+                        )
+                        return False
                 else:
+                    response_time = time.time() - start_time
                     self.log_test(
-                        "Inventory Item Image Check", 
+                        "ФАЗА 1.5: Create Equipment Items", 
                         False, 
-                        f"Image not found in inventory item. Images: {images}", 
+                        f"HTTP {response.status_code} for {item_data['name']}: {response.text}", 
                         response_time
                     )
                     return False
-            else:
-                self.log_test(
-                    "Inventory Item Image Check", 
-                    False, 
-                    f"HTTP {response.status_code}: {response.text}", 
-                    response_time
-                )
-                return False
+            
+            response_time = time.time() - start_time
+            self.log_test(
+                "ФАЗА 1.5: Create Equipment Items", 
+                True, 
+                f"Created {len(self.equipment_items)} equipment items", 
+                response_time,
+                request_data=equipment_data,
+                response_data={"created_items": len(self.equipment_items)}
+            )
+            return True
                 
         except Exception as e:
             response_time = time.time() - start_time
-            self.log_test("Inventory Item Image Check", False, f"Exception: {str(e)}", response_time)
+            self.log_test("ФАЗА 1.5: Create Equipment Items", False, f"Exception: {str(e)}", response_time)
             return False
             
     def test_image_retrieval(self):
