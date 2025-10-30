@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Backend API Test Suite for SLS1 Organizational Platform
-Testing image upload functionality for inventory items
+Comprehensive testing for project lists functionality (preliminary_list, final_list, dismantling_list)
 """
 
 import requests
@@ -11,6 +11,7 @@ from io import BytesIO
 from PIL import Image
 import os
 from pathlib import Path
+import uuid
 
 # Configuration
 BACKEND_URL = "https://project-audit-tool-2.preview.emergentagent.com/api"
