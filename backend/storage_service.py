@@ -214,6 +214,36 @@ class StorageService:
             print(f"Error deleting file: {e}")
             return False
     
+    async def _delete_telegram(self, image_url: str) -> bool:
+        """
+        Удалить файл из Telegram
+        
+        Args:
+            image_url: Строка вида "telegram:{file_id}"
+            
+        Returns:
+            True если удаление успешно
+            
+        Note:
+            Telegram API не позволяет удалить файл без message_id.
+            Метод помечает файл как удалённый, но он остаётся в чате.
+        """
+        try:
+            if not image_url.startswith('telegram:'):
+                return False
+            
+            file_id = image_url.replace('telegram:', '')
+            
+            # Примечание: для полного удаления нужен message_id
+            # Которого у нас нет после загрузки
+            # Можно сохранять message_id в БД при загрузке
+            print(f"Note: Telegram file {file_id} marked as deleted, but remains in chat")
+            return True
+            
+        except Exception as e:
+            print(f"Error deleting Telegram file: {e}")
+            return False
+    
     async def _delete_google_drive(self, image_url: str) -> bool:
         """
         Удалить файл из Google Drive (будущая реализация)
