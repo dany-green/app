@@ -91,7 +91,7 @@ class ProjectListsTester:
             return False
             
     def test_authentication(self):
-        """Test 2: Authentication"""
+        """ФАЗА 1.2: Authentication"""
         start_time = time.time()
         try:
             login_data = {
@@ -107,15 +107,17 @@ class ProjectListsTester:
                 self.token = data.get("access_token")
                 if self.token:
                     self.log_test(
-                        "Authentication", 
+                        "ФАЗА 1.2: Authentication", 
                         True, 
-                        "Successfully logged in and received token", 
-                        response_time
+                        "Successfully logged in and received JWT token", 
+                        response_time,
+                        request_data={"email": ADMIN_EMAIL, "password": "***"},
+                        response_data={"access_token": "***", "token_type": data.get("token_type")}
                     )
                     return True
                 else:
                     self.log_test(
-                        "Authentication", 
+                        "ФАЗА 1.2: Authentication", 
                         False, 
                         "No access token in response", 
                         response_time
@@ -123,7 +125,7 @@ class ProjectListsTester:
                     return False
             else:
                 self.log_test(
-                    "Authentication", 
+                    "ФАЗА 1.2: Authentication", 
                     False, 
                     f"HTTP {response.status_code}: {response.text}", 
                     response_time
@@ -132,7 +134,7 @@ class ProjectListsTester:
                 
         except Exception as e:
             response_time = time.time() - start_time
-            self.log_test("Authentication", False, f"Exception: {str(e)}", response_time)
+            self.log_test("ФАЗА 1.2: Authentication", False, f"Exception: {str(e)}", response_time)
             return False
             
     def test_create_inventory_item(self):
