@@ -93,6 +93,36 @@ class StorageService:
         # Вернуть относительный путь
         return f"/api/uploads/{item_id}/{unique_filename}"
     
+    async def _save_telegram(self, file_content: bytes, filename: str, item_id: str) -> str:
+        """
+        Сохранить файл в Telegram
+        
+        Args:
+            file_content: Содержимое файла
+            filename: Оригинальное имя файла
+            item_id: ID элемента инвентаря
+            
+        Returns:
+            JSON строка с данными: {"file_id": "...", "item_id": "...", "filename": "..."}
+        """
+        if not self.telegram_storage:
+            raise ValueError("Telegram storage not initialized")
+        
+        # Оптимизировать изображение
+        if self.config.get('telegram_storage', {}).get('optimize_images', True):
+            file_content = self._optimize_image(file_content)
+        
+        # Загрузить в Telegram с подписью
+        caption = f"Item: {item_id} | File: {filename}"
+        file_id = await self.telegram_storage.upload_photo(file_content, caption)
+        
+        if not file_id:
+            raise Exception("Failed to upload photo to Telegram")
+        
+        # Вернуть данные в формате JSON (сохраним в БД)
+        # Формат: telegram:{file_id}
+        return f"telegram:{file_id}"
+    
     async def _save_google_drive(self, file_content: bytes, filename: str, item_id: str) -> str:
         """
         Сохранить файл в Google Drive (будущая реализация)
