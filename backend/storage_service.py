@@ -1,17 +1,21 @@
 """
 Storage Service - Абстрактный слой для работы с хранилищем фотографий
-Поддерживает локальное хранилище и Google Sheets (будущая интеграция)
+Поддерживает:
+- Локальное хранилище
+- Telegram Bot (неограниченное облачное хранилище)
+- Google Sheets (будущая интеграция)
 """
 
 import os
 import json
 import shutil
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Dict
 from datetime import datetime
 import uuid
 from PIL import Image
 import io
+from telegram_storage import TelegramStorage
 
 # Загрузка конфигурации
 CONFIG_PATH = Path(__file__).parent / 'google_sheets_config.json'
