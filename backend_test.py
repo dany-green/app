@@ -56,8 +56,10 @@ class ProjectListsTester:
             "source": source
         }
         
+    # ============== ФАЗА 1: ИНИЦИАЛИЗАЦИЯ И ПОДГОТОВКА ==============
+    
     def test_database_initialization(self):
-        """Test 1: Database initialization"""
+        """ФАЗА 1.1: Database initialization"""
         start_time = time.time()
         try:
             response = requests.post(f"{self.base_url}/init")
@@ -66,15 +68,17 @@ class ProjectListsTester:
             if response.status_code == 200:
                 data = response.json()
                 self.log_test(
-                    "Database Initialization", 
+                    "ФАЗА 1.1: Database Initialization", 
                     True, 
                     f"Database initialized: {data.get('message', 'Success')}", 
-                    response_time
+                    response_time,
+                    request_data=None,
+                    response_data=data
                 )
                 return True
             else:
                 self.log_test(
-                    "Database Initialization", 
+                    "ФАЗА 1.1: Database Initialization", 
                     False, 
                     f"HTTP {response.status_code}: {response.text}", 
                     response_time
@@ -83,7 +87,7 @@ class ProjectListsTester:
                 
         except Exception as e:
             response_time = time.time() - start_time
-            self.log_test("Database Initialization", False, f"Exception: {str(e)}", response_time)
+            self.log_test("ФАЗА 1.1: Database Initialization", False, f"Exception: {str(e)}", response_time)
             return False
             
     def test_authentication(self):
