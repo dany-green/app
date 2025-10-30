@@ -406,33 +406,54 @@ class ProjectListsTester:
             self.log_test("ФАЗА 2.1: Add Preliminary List", False, f"Exception: {str(e)}", response_time)
             return False
             
-    def test_image_deletion(self):
-        """Test 7: Delete uploaded image"""
+    def test_verify_preliminary_list(self):
+        """ФАЗА 2.2: Verify preliminary_list was saved correctly"""
         start_time = time.time()
         try:
             headers = {"Authorization": f"Bearer {self.token}"}
             
-            params = {"image_url": self.uploaded_image_url}
-            
-            response = requests.delete(
-                f"{self.base_url}/inventory/{self.test_item_id}/images", 
-                params=params, 
-                headers=headers
-            )
+            response = requests.get(f"{self.base_url}/projects/{self.project_a_id}", headers=headers)
             response_time = time.time() - start_time
             
             if response.status_code == 200:
                 data = response.json()
-                self.log_test(
-                    "Image Deletion", 
-                    True, 
-                    f"Image deleted successfully: {data.get('message', 'Success')}", 
-                    response_time
-                )
-                return True
+                preliminary_list = data.get("preliminary_list", {})
+                items = preliminary_list.get("items", [])
+                
+                if len(items) == 2:
+                    # Verify item structure
+                    first_item = items[0]
+                    required_fields = ["id", "name", "category", "quantity", "source"]
+                    has_all_fields = all(field in first_item for field in required_fields)
+                    
+                    if has_all_fields:
+                        self.log_test(
+                            "ФАЗА 2.2: Verify Preliminary List", 
+                            True, 
+                            f"Preliminary list correctly saved with 2 items, all fields present", 
+                            response_time,
+                            response_data={"preliminary_list": preliminary_list}
+                        )
+                        return True
+                    else:
+                        self.log_test(
+                            "ФАЗА 2.2: Verify Preliminary List", 
+                            False, 
+                            f"Missing required fields in items: {first_item}", 
+                            response_time
+                        )
+                        return False
+                else:
+                    self.log_test(
+                        "ФАЗА 2.2: Verify Preliminary List", 
+                        False, 
+                        f"Expected 2 items, found {len(items)}", 
+                        response_time
+                    )
+                    return False
             else:
                 self.log_test(
-                    "Image Deletion", 
+                    "ФАЗА 2.2: Verify Preliminary List", 
                     False, 
                     f"HTTP {response.status_code}: {response.text}", 
                     response_time
@@ -441,7 +462,7 @@ class ProjectListsTester:
                 
         except Exception as e:
             response_time = time.time() - start_time
-            self.log_test("Image Deletion", False, f"Exception: {str(e)}", response_time)
+            self.log_test("ФАЗА 2.2: Verify Preliminary List", False, f"Exception: {str(e)}", response_time)
             return False
             
     def test_image_deleted_from_inventory(self):
