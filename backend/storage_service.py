@@ -264,10 +264,29 @@ class StorageService:
         """
         if self.mode == 'local':
             return await self._get_local_images(item_id)
+        elif self.mode == 'telegram':
+            # Для Telegram изображения хранятся в БД как telegram:{file_id}
+            # Этот метод используется редко, т.к. фронтенд получает URLs из БД
+            return []
         elif self.mode == 'google_sheets':
             return await self._get_google_sheets_images(item_id)
         else:
             return []
+    
+    async def get_telegram_file_url(self, file_id: str) -> Optional[str]:
+        """
+        Получить прямую ссылку на файл из Telegram
+        
+        Args:
+            file_id: ID файла в Telegram
+            
+        Returns:
+            Прямая ссылка на файл или None
+        """
+        if not self.telegram_storage:
+            return None
+        
+        return await self.telegram_storage.get_file_url(file_id)
     
     async def _get_local_images(self, item_id: str) -> List[str]:
         """Получить локальные изображения"""
