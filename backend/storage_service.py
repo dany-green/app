@@ -188,6 +188,8 @@ class StorageService:
         """
         if self.mode == 'local':
             return await self._delete_local(image_url)
+        elif self.mode == 'telegram':
+            return await self._delete_telegram(image_url)
         elif self.mode == 'google_sheets':
             return await self._delete_google_drive(image_url)
         else:
