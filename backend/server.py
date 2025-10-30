@@ -987,6 +987,39 @@ async def get_image(item_id: str, filename: str):
     return FileResponse(file_path)
 
 
+@api_router.get("/telegram/image/{file_id}")
+async def get_telegram_image(file_id: str):
+    """
+    Get Telegram image direct URL
+    Used when storage_mode is 'telegram'
+    Returns redirect to Telegram CDN URL
+    """
+    if storage_service.mode != 'telegram':
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Telegram storage not enabled"
+        )
+    
+    try:
+        file_url = await storage_service.get_telegram_file_url(file_id)
+        if not file_url:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Telegram file not found"
+            )
+        
+        # Redirect to Telegram file URL
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse(url=file_url)
+        
+    except Exception as e:
+        logger.error(f"Error getting Telegram image: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to get image from Telegram"
+        )
+
+
 # ============== GENERAL ROUTES ==============
 
 @api_router.get("/")
