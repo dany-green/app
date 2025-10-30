@@ -1,0 +1,9 @@
+backend/
+tests/
+uploads/
+*.log
+*.pyc
+__pycache__/
+.env
+node_modules/
+.git/
