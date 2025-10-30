@@ -1,0 +1,334 @@
+{
+  "users": [
+    {
+      "id": "admin-001",
+      "name": "Администратор",
+      "email": "admin@sls1.com",
+      "password": "admin123",
+      "role": "Администратор",
+      "is_active": true
+    },
+    {
+      "id": "decorator-001",
+      "name": "Мария Декораторова",
+      "email": "maria@sls1.com",
+      "password": "maria123",
+      "role": "Ведущий декоратор",
+      "is_active": true
+    },
+    {
+      "id": "florist-001",
+      "name": "Анна Флорист",
+      "email": "anna@sls1.com",
+      "password": "anna123",
+      "role": "Флорист",
+      "is_active": true
+    },
+    {
+      "id": "curator-001",
+      "name": "Елена Кураторова",
+      "email": "elena@sls1.com",
+      "password": "elena123",
+      "role": "Куратор студии",
+      "is_active": true
+    }
+  ],
+  "projects": [
+    {
+      "id": "project-001",
+      "title": "Свадьба в усадьбе",
+      "lead_decorator": "Мария Декораторова",
+      "project_date": "2025-08-15T14:00:00Z",
+      "status": "Создан",
+      "preliminary_list": {
+        "items": [
+          {
+            "id": "inv-001",
+            "name": "Ваза стеклянная большая",
+            "category": "Вазы",
+            "quantity": 10,
+            "source": "inventory"
+          },
+          {
+            "id": "inv-002",
+            "name": "Ваза керамическая средняя",
+            "category": "Вазы",
+            "quantity": 15,
+            "source": "inventory"
+          }
+        ]
+      },
+      "final_list": {
+        "items": []
+      },
+      "dismantling_list": {
+        "items": []
+      },
+      "curator_agreement": false,
+      "decorator_agreement": false,
+      "full_details": {
+        "venue": "Усадьба Архангельское",
+        "guest_count": 120,
+        "theme": "Классическая свадьба"
+      },
+      "created_by": "admin-001"
+    },
+    {
+      "id": "project-002",
+      "title": "Корпоратив IT компании",
+      "lead_decorator": "Мария Декораторова",
+      "project_date": "2025-09-20T18:00:00Z",
+      "status": "На согласовании",
+      "preliminary_list": {
+        "items": [
+          {
+            "id": "eq-001",
+            "name": "Проектор мультимедийный",
+            "category": "Техника",
+            "quantity": 2,
+            "source": "equipment"
+          },
+          {
+            "id": "inv-003",
+            "name": "Скатерть белая 3x2м",
+            "category": "Текстиль",
+            "quantity": 20,
+            "source": "inventory"
+          }
+        ]
+      },
+      "final_list": {
+        "items": [
+          {
+            "id": "eq-002",
+            "name": "Звуковая система",
+            "category": "Техника",
+            "quantity": 1,
+            "source": "equipment"
+          }
+        ]
+      },
+      "dismantling_list": {
+        "items": []
+      },
+      "curator_agreement": true,
+      "decorator_agreement": false,
+      "full_details": {
+        "venue": "Конгресс-центр Сколково",
+        "guest_count": 200,
+        "theme": "High-tech стиль"
+      },
+      "created_by": "admin-001"
+    },
+    {
+      "id": "project-003",
+      "title": "День рождения в ресторане",
+      "lead_decorator": "Мария Декораторова",
+      "project_date": "2025-07-30T19:00:00Z",
+      "status": "Согласован",
+      "preliminary_list": {
+        "items": [
+          {
+            "id": "inv-004",
+            "name": "Свечи декоративные",
+            "category": "Декор",
+            "quantity": 30,
+            "source": "inventory"
+          }
+        ]
+      },
+      "final_list": {
+        "items": [
+          {
+            "id": "inv-001",
+            "name": "Ваза стеклянная большая",
+            "category": "Вазы",
+            "quantity": 5,
+            "source": "inventory"
+          },
+          {
+            "id": "inv-004",
+            "name": "Свечи декоративные",
+            "category": "Декор",
+            "quantity": 30,
+            "source": "inventory"
+          },
+          {
+            "name": "Гирлянда световая 10м",
+            "category": "Декор",
+            "quantity": 3,
+            "source": "manual",
+            "notes": "Требуется теплый белый свет"
+          }
+        ]
+      },
+      "dismantling_list": {
+        "items": [
+          {
+            "id": "inv-001",
+            "name": "Ваза стеклянная большая",
+            "category": "Вазы",
+            "quantity": 5,
+            "source": "inventory"
+          }
+        ]
+      },
+      "curator_agreement": true,
+      "decorator_agreement": true,
+      "full_details": {
+        "venue": "Ресторан Кафе Пушкинъ",
+        "guest_count": 50,
+        "theme": "Романтический ужин"
+      },
+      "created_by": "admin-001"
+    }
+  ],
+  "inventory": [
+    {
+      "id": "inv-001",
+      "category": "Вазы",
+      "name": "Ваза стеклянная большая",
+      "total_quantity": 50,
+      "visual_marker": "🔴",
+      "description": "Высота 40см, прозрачное стекло",
+      "images": []
+    },
+    {
+      "id": "inv-002",
+      "category": "Вазы",
+      "name": "Ваза керамическая средняя",
+      "total_quantity": 30,
+      "visual_marker": "🔵",
+      "description": "Высота 25см, белая керамика",
+      "images": []
+    },
+    {
+      "id": "inv-003",
+      "category": "Текстиль",
+      "name": "Скатерть белая 3x2м",
+      "total_quantity": 40,
+      "visual_marker": "🟢",
+      "description": "Хлопок, белая, размер 3x2 метра",
+      "images": []
+    },
+    {
+      "id": "inv-004",
+      "category": "Декор",
+      "name": "Свечи декоративные",
+      "total_quantity": 200,
+      "visual_marker": "🟡",
+      "description": "Белые свечи, высота 20см",
+      "images": []
+    },
+    {
+      "id": "inv-005",
+      "category": "Посуда",
+      "name": "Тарелки фарфоровые белые",
+      "total_quantity": 100,
+      "visual_marker": "⚪",
+      "description": "Диаметр 27см, белый фарфор",
+      "images": []
+    },
+    {
+      "id": "inv-006",
+      "category": "Текстиль",
+      "name": "Салфетки льняные",
+      "total_quantity": 150,
+      "visual_marker": "🟤",
+      "description": "Лен, размер 40x40см, бежевые",
+      "images": []
+    },
+    {
+      "id": "inv-007",
+      "category": "Декор",
+      "name": "Подсвечники металлические",
+      "total_quantity": 60,
+      "visual_marker": "⚫",
+      "description": "Латунь, высота 15см, золотистый цвет",
+      "images": []
+    },
+    {
+      "id": "inv-008",
+      "category": "Вазы",
+      "name": "Ваза хрустальная малая",
+      "total_quantity": 25,
+      "visual_marker": "💎",
+      "description": "Высота 15см, хрусталь с огранкой",
+      "images": []
+    }
+  ],
+  "equipment": [
+    {
+      "id": "eq-001",
+      "category": "Техника",
+      "name": "Проектор мультимедийный",
+      "total_quantity": 5,
+      "visual_marker": "📽️",
+      "description": "Full HD, 3000 люмен",
+      "images": []
+    },
+    {
+      "id": "eq-002",
+      "category": "Техника",
+      "name": "Звуковая система",
+      "total_quantity": 3,
+      "visual_marker": "🔊",
+      "description": "Активная акустика, 500Вт",
+      "images": []
+    },
+    {
+      "id": "eq-003",
+      "category": "Мебель",
+      "name": "Стулья банкетные белые",
+      "total_quantity": 200,
+      "visual_marker": "🪑",
+      "description": "Пластик, белый цвет, складные",
+      "images": []
+    },
+    {
+      "id": "eq-004",
+      "category": "Мебель",
+      "name": "Столы прямоугольные 180x80",
+      "total_quantity": 30,
+      "visual_marker": "🪵",
+      "description": "Размер 180x80см, складные",
+      "images": []
+    },
+    {
+      "id": "eq-005",
+      "category": "Освещение",
+      "name": "LED прожектор RGB",
+      "total_quantity": 20,
+      "visual_marker": "💡",
+      "description": "50Вт, RGB подсветка, с пультом",
+      "images": []
+    },
+    {
+      "id": "eq-006",
+      "category": "Декор",
+      "name": "Арка свадебная",
+      "total_quantity": 5,
+      "visual_marker": "🌸",
+      "description": "Металл, высота 2.5м, белая",
+      "images": []
+    },
+    {
+      "id": "eq-007",
+      "category": "Освещение",
+      "name": "Гирлянда светодиодная 10м",
+      "total_quantity": 50,
+      "visual_marker": "✨",
+      "description": "Теплый белый свет, IP65",
+      "images": []
+    },
+    {
+      "id": "eq-008",
+      "category": "Техника",
+      "name": "Микрофон беспроводной",
+      "total_quantity": 10,
+      "visual_marker": "🎤",
+      "description": "UHF диапазон, радиус 50м",
+      "images": []
+    }
+  ]
+}
