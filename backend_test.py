@@ -609,55 +609,426 @@ class ProjectListsTester:
             response_time = time.time() - start_time
             self.log_test("ФАЗА 2.4: Add Dismantling List", False, f"Exception: {str(e)}", response_time)
             return False
+    
+    # ============== ФАЗА 3: ТЕСТИРОВАНИЕ ИЗОЛЯЦИИ МЕЖДУ ПРОЕКТАМИ ==============
+            
+    def test_project_isolation(self):
+        """ФАЗА 3: Test isolation between projects"""
+        start_time = time.time()
+        try:
+            headers = {"Authorization": f"Bearer {self.token}"}
+            
+            # Add items to Project B
+            project_b_items = [
+                self.create_sample_list_item(
+                    self.inventory_items[3]["id"], 
+                    self.inventory_items[3]["name"], 
+                    self.inventory_items[3]["category"], 
+                    10, 
+                    "inventory"
+                ),
+                self.create_sample_list_item(
+                    self.equipment_items[2]["id"], 
+                    self.equipment_items[2]["name"], 
+                    self.equipment_items[2]["category"], 
+                    5, 
+                    "equipment"
+                ),
+                self.create_sample_list_item(
+                    self.inventory_items[4]["id"], 
+                    self.inventory_items[4]["name"], 
+                    self.inventory_items[4]["category"], 
+                    8, 
+                    "inventory"
+                )
+            ]
+            
+            update_data = {
+                "preliminary_list": {
+                    "items": project_b_items
+                }
+            }
+            
+            # Update Project B
+            response_b = requests.patch(f"{self.base_url}/projects/{self.project_b_id}", json=update_data, headers=headers)
+            
+            if response_b.status_code != 200:
+                response_time = time.time() - start_time
+                self.log_test(
+                    "ФАЗА 3: Project Isolation", 
+                    False, 
+                    f"Failed to update Project B: HTTP {response_b.status_code}", 
+                    response_time
+                )
+                return False
+            
+            # Verify Project A is unchanged
+            response_a = requests.get(f"{self.base_url}/projects/{self.project_a_id}", headers=headers)
+            
+            if response_a.status_code != 200:
+                response_time = time.time() - start_time
+                self.log_test(
+                    "ФАЗА 3: Project Isolation", 
+                    False, 
+                    f"Failed to get Project A: HTTP {response_a.status_code}", 
+                    response_time
+                )
+                return False
+            
+            # Verify Project B has correct data
+            response_b_check = requests.get(f"{self.base_url}/projects/{self.project_b_id}", headers=headers)
+            
+            if response_b_check.status_code != 200:
+                response_time = time.time() - start_time
+                self.log_test(
+                    "ФАЗА 3: Project Isolation", 
+                    False, 
+                    f"Failed to get Project B: HTTP {response_b_check.status_code}", 
+                    response_time
+                )
+                return False
+            
+            response_time = time.time() - start_time
+            
+            # Check isolation
+            project_a_data = response_a.json()
+            project_b_data = response_b_check.json()
+            
+            a_preliminary = len(project_a_data.get("preliminary_list", {}).get("items", []))
+            a_final = len(project_a_data.get("final_list", {}).get("items", []))
+            a_dismantling = len(project_a_data.get("dismantling_list", {}).get("items", []))
+            
+            b_preliminary = len(project_b_data.get("preliminary_list", {}).get("items", []))
+            
+            if a_preliminary == 2 and a_final == 2 and a_dismantling == 1 and b_preliminary == 3:
+                self.log_test(
+                    "ФАЗА 3: Project Isolation", 
+                    True, 
+                    f"Projects isolated correctly. A: prel(2), final(2), dismant(1); B: prel(3)", 
+                    response_time,
+                    request_data=update_data,
+                    response_data={
+                        "project_a_unchanged": True,
+                        "project_b_updated": True,
+                        "isolation_verified": True
+                    }
+                )
+                return True
+            else:
+                self.log_test(
+                    "ФАЗА 3: Project Isolation", 
+                    False, 
+                    f"Isolation failed. A: prel({a_preliminary}), final({a_final}), dismant({a_dismantling}); B: prel({b_preliminary})", 
+                    response_time
+                )
+                return False
+                
+        except Exception as e:
+            response_time = time.time() - start_time
+            self.log_test("ФАЗА 3: Project Isolation", False, f"Exception: {str(e)}", response_time)
+            return False
+    
+    # ============== ФАЗА 4: ТЕСТИРОВАНИЕ ИНКРЕМЕНТНОГО ДОБАВЛЕНИЯ ==============
+    
+    def test_incremental_addition(self):
+        """ФАЗА 4: Test incremental addition to existing lists"""
+        start_time = time.time()
+        try:
+            headers = {"Authorization": f"Bearer {self.token}"}
+            
+            # Get current state of Project A
+            response = requests.get(f"{self.base_url}/projects/{self.project_a_id}", headers=headers)
+            if response.status_code != 200:
+                response_time = time.time() - start_time
+                self.log_test("ФАЗА 4: Incremental Addition", False, f"Failed to get project: HTTP {response.status_code}", response_time)
+                return False
+            
+            current_data = response.json()
+            current_preliminary = current_data.get("preliminary_list", {}).get("items", [])
+            
+            # Add one more item to existing preliminary list
+            new_item = self.create_sample_list_item(
+                self.equipment_items[3]["id"], 
+                self.equipment_items[3]["name"], 
+                self.equipment_items[3]["category"], 
+                1, 
+                "equipment"
+            )
+            
+            # Combine existing items with new item
+            updated_items = current_preliminary + [new_item]
+            
+            update_data = {
+                "preliminary_list": {
+                    "items": updated_items
+                }
+            }
+            
+            response = requests.patch(f"{self.base_url}/projects/{self.project_a_id}", json=update_data, headers=headers)
+            response_time = time.time() - start_time
+            
+            if response.status_code == 200:
+                data = response.json()
+                updated_preliminary = data.get("preliminary_list", {}).get("items", [])
+                final_list = data.get("final_list", {}).get("items", [])
+                dismantling_list = data.get("dismantling_list", {}).get("items", [])
+                
+                if len(updated_preliminary) == 3 and len(final_list) == 2 and len(dismantling_list) == 1:
+                    self.log_test(
+                        "ФАЗА 4: Incremental Addition", 
+                        True, 
+                        f"Successfully added 1 item to preliminary_list (now 3 items), other lists preserved", 
+                        response_time,
+                        request_data={"added_item": new_item},
+                        response_data={"new_count": len(updated_preliminary), "other_lists_preserved": True}
+                    )
+                    return True
+                else:
+                    self.log_test(
+                        "ФАЗА 4: Incremental Addition", 
+                        False, 
+                        f"Unexpected counts: preliminary({len(updated_preliminary)}), final({len(final_list)}), dismantling({len(dismantling_list)})", 
+                        response_time
+                    )
+                    return False
+            else:
+                self.log_test(
+                    "ФАЗА 4: Incremental Addition", 
+                    False, 
+                    f"HTTP {response.status_code}: {response.text}", 
+                    response_time
+                )
+                return False
+                
+        except Exception as e:
+            response_time = time.time() - start_time
+            self.log_test("ФАЗА 4: Incremental Addition", False, f"Exception: {str(e)}", response_time)
+            return False
+    
+    # ============== ФАЗА 5: EDGE CASES ==============
+    
+    def test_edge_cases(self):
+        """ФАЗА 5: Test edge cases (empty lists, null values, large datasets)"""
+        start_time = time.time()
+        try:
+            headers = {"Authorization": f"Bearer {self.token}"}
+            
+            # Test 1: Empty list
+            empty_update = {
+                "final_list": {
+                    "items": []
+                }
+            }
+            
+            response = requests.patch(f"{self.base_url}/projects/{self.project_c_id}", json=empty_update, headers=headers)
+            if response.status_code != 200:
+                response_time = time.time() - start_time
+                self.log_test("ФАЗА 5: Edge Cases", False, f"Empty list test failed: HTTP {response.status_code}", response_time)
+                return False
+            
+            # Test 2: Multiple fields update
+            multi_update = {
+                "title": "Проект В - Обновленный",
+                "preliminary_list": {
+                    "items": [
+                        self.create_sample_list_item(
+                            self.inventory_items[0]["id"], 
+                            self.inventory_items[0]["name"], 
+                            self.inventory_items[0]["category"], 
+                            20, 
+                            "inventory"
+                        )
+                    ]
+                }
+            }
+            
+            response = requests.patch(f"{self.base_url}/projects/{self.project_c_id}", json=multi_update, headers=headers)
+            response_time = time.time() - start_time
+            
+            if response.status_code == 200:
+                data = response.json()
+                title_updated = data.get("title") == "Проект В - Обновленный"
+                list_updated = len(data.get("preliminary_list", {}).get("items", [])) == 1
+                empty_final = len(data.get("final_list", {}).get("items", [])) == 0
+                
+                if title_updated and list_updated and empty_final:
+                    self.log_test(
+                        "ФАЗА 5: Edge Cases", 
+                        True, 
+                        f"Edge cases passed: empty list, multiple field update", 
+                        response_time,
+                        request_data={"empty_list_test": True, "multi_field_test": True},
+                        response_data={"all_edge_cases_passed": True}
+                    )
+                    return True
+                else:
+                    self.log_test(
+                        "ФАЗА 5: Edge Cases", 
+                        False, 
+                        f"Edge case validation failed: title({title_updated}), list({list_updated}), empty({empty_final})", 
+                        response_time
+                    )
+                    return False
+            else:
+                self.log_test(
+                    "ФАЗА 5: Edge Cases", 
+                    False, 
+                    f"HTTP {response.status_code}: {response.text}", 
+                    response_time
+                )
+                return False
+                
+        except Exception as e:
+            response_time = time.time() - start_time
+            self.log_test("ФАЗА 5: Edge Cases", False, f"Exception: {str(e)}", response_time)
+            return False
+    
+    # ============== ФАЗА 6: ПРОВЕРКА ЛОГИРОВАНИЯ ==============
+    
+    def test_logging_verification(self):
+        """ФАЗА 6: Verify logging of project updates"""
+        start_time = time.time()
+        try:
+            headers = {"Authorization": f"Bearer {self.token}"}
+            
+            response = requests.get(f"{self.base_url}/logs?limit=50", headers=headers)
+            response_time = time.time() - start_time
+            
+            if response.status_code == 200:
+                logs = response.json()
+                
+                # Count project-related logs
+                project_logs = [log for log in logs if log.get("entity_type") == "PROJECT" and log.get("action") == "UPDATE"]
+                
+                if len(project_logs) >= 5:  # We made several project updates
+                    # Check if logs contain details about list updates
+                    detailed_logs = [log for log in project_logs if log.get("details") and 
+                                   any(key in log["details"] for key in ["preliminary_list", "final_list", "dismantling_list"])]
+                    
+                    self.log_test(
+                        "ФАЗА 6: Logging Verification", 
+                        True, 
+                        f"Found {len(project_logs)} project UPDATE logs, {len(detailed_logs)} with list details", 
+                        response_time,
+                        response_data={"total_project_logs": len(project_logs), "detailed_logs": len(detailed_logs)}
+                    )
+                    return True
+                else:
+                    self.log_test(
+                        "ФАЗА 6: Logging Verification", 
+                        False, 
+                        f"Expected at least 5 project logs, found {len(project_logs)}", 
+                        response_time
+                    )
+                    return False
+            else:
+                self.log_test(
+                    "ФАЗА 6: Logging Verification", 
+                    False, 
+                    f"HTTP {response.status_code}: {response.text}", 
+                    response_time
+                )
+                return False
+                
+        except Exception as e:
+            response_time = time.time() - start_time
+            self.log_test("ФАЗА 6: Logging Verification", False, f"Exception: {str(e)}", response_time)
+            return False
             
     def run_all_tests(self):
-        """Run all tests in sequence"""
-        print("=" * 80)
-        print("SLS1 Backend API Image Functionality Test Suite")
-        print("=" * 80)
+        """Run comprehensive project lists testing"""
+        print("=" * 100)
+        print("SLS1 Backend API - Comprehensive Project Lists Testing")
+        print("Тестирование функционала списков проектов (preliminary_list, final_list, dismantling_list)")
+        print("=" * 100)
         print(f"Backend URL: {self.base_url}")
         print(f"Admin Credentials: {ADMIN_EMAIL} / {ADMIN_PASSWORD}")
-        print("=" * 80)
+        print("=" * 100)
         
-        tests = [
+        # Phase 1: Initialization
+        print("\n🔧 ФАЗА 1: ИНИЦИАЛИЗАЦИЯ И ПОДГОТОВКА")
+        phase1_tests = [
             self.test_database_initialization,
             self.test_authentication,
-            self.test_create_inventory_item,
-            self.test_image_upload,
-            self.test_inventory_item_with_image,
-            self.test_image_retrieval,
-            self.test_image_deletion,
-            self.test_image_deleted_from_inventory,
-            self.test_unauthorized_access
+            self.test_create_projects,
+            self.test_create_inventory_items,
+            self.test_create_equipment_items
         ]
         
-        passed = 0
-        total = len(tests)
+        # Phase 2: Basic list operations
+        print("\n📝 ФАЗА 2: БАЗОВОЕ ТЕСТИРОВАНИЕ СПИСКОВ")
+        phase2_tests = [
+            self.test_add_preliminary_list,
+            self.test_verify_preliminary_list,
+            self.test_add_final_list,
+            self.test_add_dismantling_list
+        ]
         
-        for test in tests:
+        # Phase 3: Isolation testing
+        print("\n🔒 ФАЗА 3: ТЕСТИРОВАНИЕ ИЗОЛЯЦИИ МЕЖДУ ПРОЕКТАМИ")
+        phase3_tests = [
+            self.test_project_isolation
+        ]
+        
+        # Phase 4: Incremental addition
+        print("\n➕ ФАЗА 4: ТЕСТИРОВАНИЕ ИНКРЕМЕНТНОГО ДОБАВЛЕНИЯ")
+        phase4_tests = [
+            self.test_incremental_addition
+        ]
+        
+        # Phase 5: Edge cases
+        print("\n⚠️ ФАЗА 5: ТЕСТИРОВАНИЕ EDGE CASES")
+        phase5_tests = [
+            self.test_edge_cases
+        ]
+        
+        # Phase 6: Logging
+        print("\n📊 ФАЗА 6: ПРОВЕРКА ЛОГИРОВАНИЯ")
+        phase6_tests = [
+            self.test_logging_verification
+        ]
+        
+        all_tests = phase1_tests + phase2_tests + phase3_tests + phase4_tests + phase5_tests + phase6_tests
+        
+        passed = 0
+        total = len(all_tests)
+        failed_tests = []
+        
+        for test in all_tests:
             if test():
                 passed += 1
+            else:
+                failed_tests.append(test.__name__)
             print()  # Empty line between tests
             
-        print("=" * 80)
-        print("TEST SUMMARY")
-        print("=" * 80)
-        print(f"Total Tests: {total}")
-        print(f"Passed: {passed}")
-        print(f"Failed: {total - passed}")
-        print(f"Success Rate: {(passed/total)*100:.1f}%")
+        print("=" * 100)
+        print("📊 ИТОГОВЫЙ ОТЧЕТ ПО ТЕСТИРОВАНИЮ")
+        print("=" * 100)
+        print(f"Всего тестов: {total}")
+        print(f"Прошли: {passed}")
+        print(f"Провалились: {total - passed}")
+        print(f"Процент успеха: {(passed/total)*100:.1f}%")
         
         if passed == total:
-            print("\n🎉 ALL TESTS PASSED! Image functionality is working correctly.")
+            print("\n🎉 ВСЕ ТЕСТЫ ПРОШЛИ! Функционал списков проектов работает корректно.")
         else:
-            print(f"\n⚠️  {total - passed} test(s) failed. See details above.")
+            print(f"\n⚠️ {total - passed} тест(ов) провалились:")
+            for failed_test in failed_tests:
+                print(f"   ❌ {failed_test}")
             
-        print("\nDetailed Results:")
+        print("\n📋 ДЕТАЛЬНЫЕ РЕЗУЛЬТАТЫ:")
         for result in self.test_results:
             status = "✅" if result["success"] else "❌"
             time_info = f" ({result['response_time']:.3f}s)" if result.get("response_time") else ""
             print(f"{status} {result['test']}: {result['message']}{time_info}")
             
+        # Summary of issues found
+        critical_issues = [r for r in self.test_results if not r["success"]]
+        if critical_issues:
+            print("\n🚨 ОБНАРУЖЕННЫЕ ПРОБЛЕМЫ:")
+            for issue in critical_issues:
+                print(f"   • {issue['test']}: {issue['message']}")
+                
         return passed == total
 
 if __name__ == "__main__":
