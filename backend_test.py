@@ -18,13 +18,18 @@ BACKEND_URL = "https://project-audit-tool-2.preview.emergentagent.com/api"
 ADMIN_EMAIL = "admin@sls1.com"
 ADMIN_PASSWORD = "admin123"
 
-class BackendTester:
+class ProjectListsTester:
     def __init__(self):
         self.base_url = BACKEND_URL
         self.token = None
-        self.test_item_id = None
-        self.uploaded_image_url = None
         self.test_results = []
+        
+        # Test data storage
+        self.project_a_id = None
+        self.project_b_id = None
+        self.project_c_id = None
+        self.inventory_items = []
+        self.equipment_items = []
         
     def log_test(self, test_name, success, message, response_time=None):
         """Log test result"""
