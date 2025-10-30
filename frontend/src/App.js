@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import Layout from "@/components/Layout";
 import LoginPage from "@/pages/LoginPage";
 import ProjectsPage from "@/pages/ProjectsPage";
+import ProjectDetailPage from "@/pages/ProjectDetailPage";
 import InventoryPage from "@/pages/InventoryPage";
 import EquipmentPage from "@/pages/EquipmentPage";
 import SettingsPage from "@/pages/SettingsPage";
