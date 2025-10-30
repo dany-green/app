@@ -1,10 +1,22 @@
 {
-  "_comment": "Конфигурация для интеграции с Google Sheets",
+  "_comment": "Конфигурация для хранения данных и фотографий",
   "_instructions": "См. файл GOOGLE_SHEETS_INTEGRATION.md для полной инструкции по настройке",
   
   "storage_mode": "local",
-  "_storage_mode_options": ["local", "google_sheets"],
-  "_storage_mode_description": "local - хранение на сервере, google_sheets - синхронизация с Google Sheets",
+  "_storage_mode_options": ["local", "telegram", "google_sheets"],
+  "_storage_mode_description": "local - хранение на сервере, telegram - хранение в Telegram Bot, google_sheets - синхронизация с Google Sheets",
+  
+  "telegram_storage": {
+    "enabled": false,
+    "bot_token": "",
+    "chat_id": "",
+    "_description": "Хранение фотографий через Telegram Bot (бесплатно и неограниченно)",
+    "_instructions": "Установите переменные окружения TELEGRAM_BOT_TOKEN и TELEGRAM_CHAT_ID",
+    "_how_to_get_bot_token": "1. Откройте @BotFather в Telegram, 2. Отправьте /newbot, 3. Следуйте инструкциям, 4. Скопируйте токен",
+    "_how_to_get_chat_id": "1. Создайте приватный канал, 2. Добавьте бота как администратора, 3. Используйте @getidsbot для получения ID канала",
+    "optimize_images": true,
+    "_optimize_description": "Сжимать изображения перед загрузкой в Telegram"
+  },
   
   "google_sheets": {
     "enabled": false,
