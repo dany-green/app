@@ -333,46 +333,68 @@ class ProjectListsTester:
             response_time = time.time() - start_time
             self.log_test("ФАЗА 1.5: Create Equipment Items", False, f"Exception: {str(e)}", response_time)
             return False
+    
+    # ============== ФАЗА 2: БАЗОВОЕ ТЕСТИРОВАНИЕ СПИСКОВ ==============
             
-    def test_image_retrieval(self):
-        """Test 6: Retrieve uploaded image"""
+    def test_add_preliminary_list(self):
+        """ФАЗА 2.1: Add items to preliminary_list of Project A"""
         start_time = time.time()
         try:
-            # Extract the path from the image URL
-            # URL format: /api/uploads/{item_id}/{filename}
-            if not self.uploaded_image_url:
-                self.log_test("Image Retrieval", False, "No uploaded image URL available", 0)
-                return False
-                
-            # The uploaded_image_url should be a relative path like /api/uploads/{item_id}/{filename}
-            # We need to make a request to the full URL
-            image_url = f"{self.base_url.replace('/api', '')}{self.uploaded_image_url}"
+            headers = {"Authorization": f"Bearer {self.token}"}
             
-            response = requests.get(image_url)
+            # Create preliminary list with 2 items
+            preliminary_items = [
+                self.create_sample_list_item(
+                    self.inventory_items[0]["id"], 
+                    self.inventory_items[0]["name"], 
+                    self.inventory_items[0]["category"], 
+                    3, 
+                    "inventory"
+                ),
+                self.create_sample_list_item(
+                    self.equipment_items[0]["id"], 
+                    self.equipment_items[0]["name"], 
+                    self.equipment_items[0]["category"], 
+                    2, 
+                    "equipment"
+                )
+            ]
+            
+            update_data = {
+                "preliminary_list": {
+                    "items": preliminary_items
+                }
+            }
+            
+            response = requests.patch(f"{self.base_url}/projects/{self.project_a_id}", json=update_data, headers=headers)
             response_time = time.time() - start_time
             
             if response.status_code == 200:
-                # Check if it's actually an image
-                content_type = response.headers.get('content-type', '')
-                if 'image' in content_type or len(response.content) > 0:
+                data = response.json()
+                saved_preliminary = data.get("preliminary_list", {})
+                saved_items = saved_preliminary.get("items", [])
+                
+                if len(saved_items) == 2:
                     self.log_test(
-                        "Image Retrieval", 
+                        "ФАЗА 2.1: Add Preliminary List", 
                         True, 
-                        f"Image retrieved successfully, size: {len(response.content)} bytes", 
-                        response_time
+                        f"Added 2 items to preliminary_list of Project A", 
+                        response_time,
+                        request_data=update_data,
+                        response_data={"preliminary_list": saved_preliminary}
                     )
                     return True
                 else:
                     self.log_test(
-                        "Image Retrieval", 
+                        "ФАЗА 2.1: Add Preliminary List", 
                         False, 
-                        f"Response not an image. Content-Type: {content_type}", 
+                        f"Expected 2 items, got {len(saved_items)}", 
                         response_time
                     )
                     return False
             else:
                 self.log_test(
-                    "Image Retrieval", 
+                    "ФАЗА 2.1: Add Preliminary List", 
                     False, 
                     f"HTTP {response.status_code}: {response.text}", 
                     response_time
@@ -381,7 +403,7 @@ class ProjectListsTester:
                 
         except Exception as e:
             response_time = time.time() - start_time
-            self.log_test("Image Retrieval", False, f"Exception: {str(e)}", response_time)
+            self.log_test("ФАЗА 2.1: Add Preliminary List", False, f"Exception: {str(e)}", response_time)
             return False
             
     def test_image_deletion(self):
